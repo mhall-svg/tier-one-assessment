@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tier One Risk Assessment — Commercial Security Assessment</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f5; color: #1a1a2e; }
+
+  /* LOGIN */
+  #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460); }
+  .login-box { background: white; padding: 48px 40px; border-radius: 12px; width: 380px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+  .login-box img { width: 80px; margin-bottom: 20px; }
+  .login-box h1 { font-size: 22px; color: #1a1a2e; margin-bottom: 6px; }
+  .login-box p { font-size: 13px; color: #666; margin-bottom: 28px; }
+  .login-box input { width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; margin-bottom: 16px; outline: none; }
+  .login-box input:focus { border-color: #0f3460; }
+  .login-box button { width: 100%; padding: 13px; background: #0f3460; color: white; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; }
+  .login-box button:hover { background: #16213e; }
+  .login-error { color: #c0392b; font-size: 13px; margin-top: 10px; display: none; }
+
+  /* MAIN APP */
+  #app { display: none; }
+  .top-bar { background: #1a1a2e; color: white; padding: 14px 32px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .top-bar h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .top-bar span { font-size: 13px; color: #aaa; }
+  .brand-selector { display: flex; gap: 10px; }
+  .brand-btn { padding: 6px 16px; border-radius: 20px; border: 2px solid #444; background: transparent; color: #ccc; font-size: 12px; cursor: pointer; font-weight: 600; }
+  .brand-btn.active { border-color: #4a9eda; background: #4a9eda; color: white; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SCORE DASHBOARD */
+  .dashboard { background: white; border-radius: 12px; padding: 28px; margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .dashboard h2 { font-size: 16px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+  .score-main { display: flex; align-items: center; gap: 40px; flex-wrap: wrap; }
+  .score-circle { width: 120px; height: 120px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 700; border: 6px solid #e0e0e0; transition: all 0.3s; }
+  .score-circle .score-num { font-size: 36px; line-height: 1; }
+  .score-circle .score-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-top: 4px; }
+  .risk-badge { padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+  .risk-green { background: #d4edda; color: #155724; border: 2px solid #28a745; }
+  .risk-yellow { background: #fff3cd; color: #856404; border: 2px solid #ffc107; }
+  .risk-orange { background: #ffe5cc; color: #7c4a00; border: 2px solid #fd7e14; }
+  .risk-red { background: #f8d7da; color: #721c24; border: 2px solid #dc3545; }
+  .score-legend { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+  .score-legend div { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+
+  /* FACILITY INFO */
+  .facility-card { background: white; border-radius: 12px; padding: 28px; margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .facility-card h2 { font-size: 16px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+  .form-group input, .form-group select, .form-group textarea { padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0f3460; }
+
+  /* PILLAR CARDS */
+  .pillar-card { background: white; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+  .pillar-header { padding: 18px 24px; display: flex; align-items: center; gap: 16px; cursor: pointer; user-select: none; border-bottom: 1px solid #f0f0f0; }
+  .pillar-number { width: 36px; height: 36px; border-radius: 50%; background: #0f3460; color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .pillar-title { font-size: 16px; font-weight: 700; flex: 1; }
+  .pillar-score-badge { padding: 4px 14px; border-radius: 20px; font-size: 13px; font-weight: 700; background: #f0f0f0; color: #666; }
+  .pillar-chevron { font-size: 18px; color: #999; transition: transform 0.2s; }
+  .pillar-body { padding: 24px; display: none; }
+  .pillar-body.open { display: block; }
+
+  .question-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f5f5f5; }
+  .question-row:last-of-type { border-bottom: none; }
+  .question-text { flex: 1; font-size: 14px; color: #333; padding-top: 2px; }
+  .btn-group { display: flex; gap: 6px; flex-shrink: 0; }
+  .score-btn { padding: 5px 12px; border-radius: 6px; border: 2px solid #ddd; background: white; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.15s; }
+  .score-btn.yes.active { background: #28a745; border-color: #28a745; color: white; }
+  .score-btn.partial.active { background: #ffc107; border-color: #ffc107; color: #333; }
+  .score-btn.no.active { background: #dc3545; border-color: #dc3545; color: white; }
+  .score-btn.na.active { background: #6c757d; border-color: #6c757d; color: white; }
+  .score-btn:hover { opacity: 0.85; }
+
+  .notes-section { margin-top: 20px; }
+  .notes-section label { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
+  .notes-section textarea { width: 100%; padding: 12px 14px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 14px; min-height: 100px; outline: none; font-family: inherit; resize: vertical; }
+  .notes-section textarea:focus { border-color: #0f3460; }
+  .notes-hint { font-size: 11px; color: #999; margin-top: 6px; font-style: italic; }
+
+  /* PILLAR SCORE COLORS */
+  .badge-green { background: #d4edda; color: #155724; }
+  .badge-yellow { background: #fff3cd; color: #856404; }
+  .badge-orange { background: #ffe5cc; color: #7c4a00; }
+  .badge-red { background: #f8d7da; color: #721c24; }
+  .badge-grey { background: #f0f0f0; color: #666; }
+
+  /* ACTION BUTTONS */
+  .action-bar { background: white; border-radius: 12px; padding: 24px 28px; margin-bottom: 28px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); display: flex; gap: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .action-bar h3 { font-size: 15px; font-weight: 600; }
+  .btn { padding: 12px 28px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .btn-primary { background: #0f3460; color: white; }
+  .btn-primary:hover { background: #16213e; }
+  .btn-success { background: #28a745; color: white; }
+  .btn-success:hover { background: #218838; }
+  .btn-outline { background: white; color: #0f3460; border: 2px solid #0f3460; }
+  .btn-outline:hover { background: #0f3460; color: white; }
+  .btn-danger { background: #dc3545; color: white; }
+
+  /* REVIEW SCREEN */
+  #review-screen { display: none; }
+  .review-header { background: #1a1a2e; color: white; padding: 20px 32px; margin-bottom: 28px; }
+  .review-header h2 { font-size: 22px; }
+  .review-header p { font-size: 14px; color: #aaa; margin-top: 6px; }
+  .review-pillar { background: white; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+  .review-pillar-header { padding: 16px 24px; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 12px; }
+  .review-pillar-header h3 { font-size: 15px; font-weight: 700; flex: 1; }
+  .review-body { padding: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .review-col h4 { font-size: 12px; font-weight: 600; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; }
+  .rough-notes { background: #f8f9fa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 14px; font-size: 13px; color: #555; min-height: 80px; font-style: italic; }
+  .ai-notes { background: #f0f7ff; border: 2px solid #4a9eda; border-radius: 8px; padding: 14px; font-size: 13px; color: #1a1a2e; min-height: 80px; }
+  .ai-notes textarea { width: 100%; border: none; background: transparent; font-size: 13px; font-family: inherit; outline: none; resize: vertical; min-height: 80px; color: #1a1a2e; }
+  .review-actions { display: flex; gap: 8px; margin-top: 12px; }
+  .btn-sm { padding: 6px 14px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-approve { background: #28a745; color: white; }
+  .btn-regenerate { background: #ffc107; color: #333; }
+  .approved-badge { display: inline-block; background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+
+  /* PRINT / PDF REPORT */
+  #report-screen { display: none; }
+  @media print {
+    .top-bar, .action-bar, #login-screen, #review-screen, .no-print { display: none !important; }
+    #report-screen { display: block !important; }
+    body { background: white; }
+    .report-page { page-break-after: always; }
+  }
+  .report-container { max-width: 900px; margin: 0 auto; padding: 40px 24px; }
+  .report-cover { text-align: center; padding: 60px 40px; background: linear-gradient(135deg, #1a1a2e, #0f3460); color: white; border-radius: 12px; margin-bottom: 32px; }
+  .report-cover h1 { font-size: 32px; margin-bottom: 12px; }
+  .report-cover h2 { font-size: 20px; font-weight: 400; margin-bottom: 8px; color: #aac4e0; }
+  .report-cover .report-meta { margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; text-align: left; background: rgba(255,255,255,0.1); padding: 20px; border-radius: 8px; }
+  .report-meta-item label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; }
+  .report-meta-item p { font-size: 15px; font-weight: 600; margin-top: 2px; }
+  .report-section { background: white; border-radius: 12px; padding: 32px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .report-section h2 { font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e0e0e0; }
+  .exec-summary { font-size: 15px; line-height: 1.7; color: #333; }
+  .pillar-summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .pillar-summary-item { padding: 14px 18px; border-radius: 8px; border-left: 4px solid #ddd; background: #f8f9fa; }
+  .pillar-summary-item h4 { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .pillar-summary-item .score { font-size: 20px; font-weight: 700; }
+  .pillar-summary-item.green { border-left-color: #28a745; }
+  .pillar-summary-item.yellow { border-left-color: #ffc107; }
+  .pillar-summary-item.orange { border-left-color: #fd7e14; }
+  .pillar-summary-item.red { border-left-color: #dc3545; }
+  .finding-block { margin-bottom: 28px; padding-bottom: 28px; border-bottom: 1px solid #f0f0f0; }
+  .finding-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .finding-block h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 12px; }
+  .finding-block p { font-size: 14px; line-height: 1.7; color: #444; }
+  .action-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .action-table th { background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; }
+  .action-table td { padding: 10px 14px; border-bottom: 1px solid #e0e0e0; vertical-align: top; }
+  .action-table tr:nth-child(even) td { background: #f8f9fa; }
+  .priority-immediate { color: #dc3545; font-weight: 700; }
+  .priority-short { color: #fd7e14; font-weight: 700; }
+  .priority-long { color: #28a745; font-weight: 700; }
+  .sign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 20px; }
+  .sign-block { border-top: 2px solid #333; padding-top: 12px; }
+  .sign-block p { font-size: 13px; color: #666; }
+  .confidential-footer { text-align: center; font-size: 12px; color: #999; margin-top: 32px; padding-top: 20px; border-top: 1px solid #e0e0e0; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div style="font-size:48px;margin-bottom:16px;">🛡️</div>
+    <h1>Tier One Risk Assessment</h1>
+    <p>Commercial Security Assessment Platform<br>Authorized Personnel Only</p>
+    <input type="password" id="password-input" placeholder="Enter access password" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button onclick="checkLogin()">Access Assessment Tool</button>
+    <p class="login-error" id="login-error">Incorrect password. Please try again.</p>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="top-bar">
+    <h1>🛡️ Tier One Risk Assessment — Commercial Security Assessment</h1>
+    <div style="display:flex;align-items:center;gap:20px;">
+      <div class="brand-selector">
+        <button class="brand-btn active" onclick="setBrand('bluestar',this)">Blue Star</button>
+        <button class="brand-btn" onclick="setBrand('gss',this)">GSS</button>
+      </div>
+      <span id="completion-pct">0% Complete</span>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- SCORE DASHBOARD -->
+    <div class="dashboard">
+      <h2>Live Score Dashboard</h2>
+      <div class="score-main">
+        <div class="score-circle" id="score-circle">
+          <span class="score-num" id="overall-score">--</span>
+          <span class="score-label">Overall</span>
+        </div>
+        <div>
+          <div class="risk-badge badge-grey" id="risk-badge">Not Started</div>
+          <div style="margin-top:12px;font-size:13px;color:#666;" id="score-detail">Complete the assessment to see your score.</div>
+        </div>
+        <div class="score-legend">
+          <div><div class="dot" style="background:#28a745;"></div> 85–100: Low Risk</div>
+          <div><div class="dot" style="background:#ffc107;"></div> 70–84: Moderate Risk</div>
+          <div><div class="dot" style="background:#fd7e14;"></div> 50–69: High Risk</div>
+          <div><div class="dot" style="background:#dc3545;"></div> 0–49: Critical Risk</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FACILITY INFO -->
+    <div class="facility-card">
+      <h2>Facility Information</h2>
+      <div class="form-grid">
+        <div class="form-group"><label>Organization / Business Name</label><input type="text" id="fi-org" placeholder="e.g. Marriott Downtown Jacksonville"></div>
+        <div class="form-group"><label>Facility Type</label>
+          <select id="fi-type">
+            <option value="">Select type...</option>
+            <option>Corporate Office</option>
+            <option>Hotel</option>
+            <option>Stadium / Arena</option>
+            <option>Concert / Event Venue</option>
+            <option>Apartment Complex</option>
+            <option>Retail / Shopping Center</option>
+            <option>Healthcare Facility</option>
+            <option>Warehouse / Industrial</option>
+            <option>Educational Institution</option>
+            <option>Government Building</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Street Address</label><input type="text" id="fi-address" placeholder="Full address including city, state, zip"></div>
+        <div class="form-group"><label>Primary Contact Name</label><input type="text" id="fi-contact" placeholder="Name and title"></div>
+        <div class="form-group"><label>Primary Contact Phone</label><input type="text" id="fi-phone" placeholder="Phone number"></div>
+        <div class="form-group"><label>Assessment Date</label><input type="date" id="fi-date"></div>
+        <div class="form-group"><label>Lead Assessor</label><input type="text" id="fi-assessor" value="Montague Hall" placeholder="Assessor name"></div>
+        <div class="form-group"><label>Number of Employees / Occupants</label><input type="text" id="fi-occupants" placeholder="Approximate number"></div>
+        <div class="form-group"><label>Square Footage</label><input type="text" id="fi-sqft" placeholder="Approximate sq ft"></div>
+        <div class="form-group"><label>Number of Buildings / Floors</label><input type="text" id="fi-buildings" placeholder="e.g. 1 building, 12 floors"></div>
+        <div class="form-group full"><label>Assessment Scope / Special Notes</label><textarea id="fi-scope" placeholder="Describe scope of assessment, any areas excluded, special conditions..." rows="3"></textarea></div>
+      </div>
+    </div>
+
+    <!-- PILLARS -->
+    <div id="pillars-container"></div>
+
+    <!-- ACTION BAR -->
+    <div class="action-bar no-print">
+      <div>
+        <h3>Ready to generate your report?</h3>
+        <p style="font-size:13px;color:#666;margin-top:4px;">Complete all pillars, then generate the AI-assisted draft report for review.</p>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline" onclick="saveProgress()">💾 Save Progress</button>
+        <button class="btn btn-primary" onclick="generateDraft()">✨ Generate Draft Report</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- REVIEW SCREEN -->
+<div id="review-screen">
+  <div class="review-header">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+      <div>
+        <h2>Review & Approve Report Sections</h2>
+        <p>Copy each prompt → paste into Grok/ChatGPT → paste result into the box → click Approve.</p>
+      </div>
+      <div style="background:rgba(255,255,255,0.15);padding:12px 24px;border-radius:8px;text-align:center;">
+        <div style="font-size:24px;font-weight:700;" id="approved-count">0 of 16 sections approved</div>
+        <div style="font-size:12px;color:#aaa;margin-top:2px;">Approve all before finalizing</div>
+      </div>
+    </div>
+  </div>
+  <div class="container">
+    <div id="review-container"></div>
+    <div class="action-bar">
+      <div>
+        <h3>All sections reviewed?</h3>
+        <p style="font-size:13px;color:#666;margin-top:4px;">Approve all sections, then finalize and print your report.</p>
+      </div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline" onclick="backToAssessment()">← Back to Assessment</button>
+        <button class="btn btn-success" onclick="finalizeReport()">📄 Finalize & View Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REPORT SCREEN -->
+<div id="report-screen">
+  <div class="report-container">
+    <div id="report-output"></div>
+    <div class="action-bar no-print" style="margin-top:24px;">
+      <div></div>
+      <div style="display:flex;gap:12px;">
+        <button class="btn btn-outline" onclick="backToReview()">← Back to Review</button>
+        <button class="btn btn-primary" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PASSWORD = "Blue@55";
+const PILLARS = [
+  {
+    id: "physical",
+    title: "Physical Security & Perimeter",
+    weight: 8,
+    questions: [
+      "Perimeter is clearly defined with appropriate fencing, walls, or barriers",
+      "Entry and exit points are controlled and monitored",
+      "Exterior lighting is adequate and covers all areas including parking",
+      "Signage clearly identifies restricted areas and trespassing consequences",
+      "Landscaping does not create concealment opportunities for threats",
+      "Vehicle barriers/bollards are present at high-risk entry points",
+      "Loading docks and service entrances are secured and monitored",
+      "All doors, windows, and roof access points are secured appropriately"
+    ]
+  },
+  {
+    id: "access",
+    title: "Access Control",
+    weight: 9,
+    questions: [
+      "Electronic access control system is in place and operational",
+      "Visitor management system logs and tracks all non-employee visitors",
+      "Employee badge/credential system is active with photo identification",
+      "After-hours access is restricted and monitored",
+      "Key control policy documents who has access to physical keys",
+      "Terminated employee credentials are deactivated immediately upon separation",
+      "Vendor and contractor access is controlled and logged",
+      "Tailgating / piggybacking prevention measures are in place"
+    ]
+  },
+  {
+    id: "cctv",
+    title: "Video Surveillance (CCTV)",
+    weight: 8,
+    questions: [
+      "Camera system covers all entry and exit points",
+      "Parking areas, loading docks, and perimeter are covered",
+      "Interior common areas, lobbies, and hallways have adequate coverage",
+      "Camera footage is recorded and retained per policy (minimum 30 days recommended)",
+      "System is monitored in real time or reviewed regularly",
+      "Cameras are in working order with no significant blind spots",
+      "Recording system is secured and access is limited to authorized personnel",
+      "Camera placement deters criminal activity visibly"
+    ]
+  },
+  {
+    id: "personnel",
+    title: "Security Personnel",
+    weight: 8,
+    questions: [
+      "Adequate security staffing levels are maintained for facility size and risk",
+      "Security personnel are properly licensed per state requirements",
+      "Post orders are written, current, and accessible to all security staff",
+      "Security personnel receive regular training and briefings",
+      "Communication protocols between security and management are established",
+      "Security personnel conduct regular patrols on documented schedules",
+      "Incident documentation and reporting procedures are followed consistently",
+      "Security personnel appearance and conduct reflects professional standards"
+    ]
+  },
+  {
+    id: "emergency",
+    title: "Emergency Action Plans",
+    weight: 9,
+    questions: [
+      "Written Emergency Action Plan (EAP) exists and is current",
+      "Evacuation routes are posted and clearly marked throughout facility",
+      "Emergency assembly points are designated and communicated to all occupants",
+      "Shelter-in-place procedures are documented and practiced",
+      "Emergency contact lists are current and accessible",
+      "Annual emergency drills are conducted and documented",
+      "Staff are trained on their specific emergency response roles",
+      "Business continuity plan exists for major incidents"
+    ]
+  },
+  {
+    id: "active_threat",
+    title: "Active Threat Preparedness",
+    weight: 9,
+    questions: [
+      "Active threat/Run-Hide-Fight policy is documented and communicated",
+      "Lockdown procedures are established and staff are trained",
+      "Coordination protocol with local law enforcement is established",
+      "Active threat training has been conducted within the past 12 months",
+      "Facility layout supports rapid lockdown of critical areas",
+      "Mass notification system can reach all occupants rapidly",
+      "Threat assessment team or process is in place",
+      "Staff know how to report suspicious behavior or threats"
+    ]
+  },
+  {
+    id: "communications",
+    title: "Communications Systems",
+    weight: 7,
+    questions: [
+      "Two-way radio or communication system is available to security personnel",
+      "Mass notification system (PA, text, email) is operational and tested",
+      "Panic/duress buttons are installed at key locations",
+      "Intercom system at entry points is functional",
+      "Backup communications exist if primary systems fail",
+      "Communication protocols for incidents are clearly defined",
+      "Emergency numbers are posted and accessible to all staff"
+    ]
+  },
+  {
+    id: "cyber",
+    title: "Cybersecurity Awareness",
+    weight: 6,
+    questions: [
+      "Physical access to servers, network closets, and IT infrastructure is restricted",
+      "Security cameras and access control systems are on secure, separate networks",
+      "Staff are trained on social engineering and tailgating risks",
+      "Visitor network access is segregated from operational systems",
+      "USB ports on public-facing computers are disabled or restricted",
+      "Cybersecurity incident response plan exists"
+    ]
+  },
+  {
+    id: "crowd",
+    title: "Crowd Management",
+    weight: 6,
+    questions: [
+      "Crowd management plan exists for peak occupancy events",
+      "Bag inspection / screening procedures are documented and practiced",
+      "Magnetometer or security screening is used at appropriate entry points",
+      "Queue management controls prevent congestion at entry points",
+      "Alcohol policy and behavior management protocols are in place",
+      "Capacity limits are monitored and enforced",
+      "VIP or sensitive area protocols are separately defined",
+      "Crowd flow and egress paths are clearly marked and unobstructed"
+    ]
+  },
+  {
+    id: "training",
+    title: "Employee & Staff Security Training",
+    weight: 7,
+    questions: [
+      "New employee security orientation is conducted",
+      "Annual security awareness training is provided to all staff",
+      "Staff are trained on recognizing and reporting suspicious behavior",
+      "De-escalation training has been provided to customer-facing staff",
+      "Staff know how to properly document and report security incidents",
+      "Training records are maintained for all security-related training",
+      "Key staff hold current first aid / Stop the Bleed certifications"
+    ]
+  },
+  {
+    id: "incidents",
+    title: "Incident History & Reporting",
+    weight: 6,
+    questions: [
+      "Incident reporting system is in place and actively used",
+      "All security incidents are documented in a standardized format",
+      "Incident reports are reviewed regularly by management",
+      "Trend analysis is performed to identify recurring security issues",
+      "Near-miss incidents are reported and analyzed",
+      "Incident data informs security improvements and budget decisions",
+      "Regulatory reporting requirements are met for applicable incidents"
+    ]
+  },
+  {
+    id: "compliance",
+    title: "Compliance & Liability",
+    weight: 7,
+    questions: [
+      "Facility meets all applicable local, state, and federal security requirements",
+      "Security-related insurance coverage is current and adequate",
+      "Required safety and security signage is properly posted",
+      "ADA accessibility requirements are met at all entry and emergency points",
+      "Security assessments are conducted and documented regularly",
+      "Legal counsel has reviewed security policies and liability exposure",
+      "Premises liability risks have been identified and mitigated"
+    ]
+  },
+  {
+    id: "policies",
+    title: "Policies & Documentation",
+    weight: 8,
+    questions: [
+      "Written security policy exists, is current, and has been communicated to staff",
+      "Visitor and vendor access policy is documented and enforced",
+      "Incident reporting policy and forms are in place",
+      "Background check policy covers all employees and contractors",
+      "Key and access control policy defines who has access to what areas",
+      "Termination and offboarding security protocol is documented",
+      "Crisis communications policy defines who speaks to media during incidents",
+      "Social media policy addresses inadvertent security disclosures",
+      "All policies have been reviewed within the past 12 months"
+    ]
+  },
+  {
+    id: "workplace_violence",
+    title: "Workplace Violence Prevention",
+    weight: 8,
+    questions: [
+      "Written Workplace Violence Prevention Policy exists and is communicated",
+      "Threat assessment team or process is established",
+      "Anonymous employee reporting mechanism is available",
+      "Protection order / restraining order notification protocol exists",
+      "Managers are trained to recognize behavioral warning signs",
+      "Terminated employee escort and immediate access revocation process is in place",
+      "Zero tolerance policy is clearly communicated in employee handbook",
+      "Post-incident response and support resources are identified"
+    ]
+  },
+  {
+    id: "cpted",
+    title: "Crime Prevention Through Environmental Design (CPTED)",
+    weight: 7,
+    questions: [
+      "Natural surveillance is supported — occupied spaces have clear sightlines",
+      "Landscaping is maintained to eliminate hiding spots near building",
+      "Territorial boundaries between public and private areas are clearly defined",
+      "Lighting design eliminates dark corners and covers all exterior areas",
+      "Signage reinforces boundaries and deters unauthorized access",
+      "Building layout supports defensible space principles",
+      "Environmental design has been reviewed by a qualified security professional"
+    ]
+  },
+  {
+    id: "environmental",
+    title: "Environmental & Sensor Systems",
+    weight: 6,
+    questions: [
+      "Smoke and fire detection systems are operational and tested regularly",
+      "Fire suppression systems are current and inspected",
+      "Carbon monoxide and gas detection is in place where applicable",
+      "Panic / duress buttons are installed and tested at key locations",
+      "Intrusion detection / alarm system is operational and monitored",
+      "Environmental sensors integrate with security response protocols",
+      "Gunshot detection system is evaluated for appropriateness to facility"
+    ]
+  }
+];
+
+let scores = {};
+let notes = {};
+let approvedNarratives = {};
+let currentBrand = 'bluestar';
+let anthropicApiKey = '';
+
+function checkLogin() {
+  const input = document.getElementById('password-input').value;
+  if (input === PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    initAssessment();
+  } else {
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+function setBrand(brand, btn) {
+  currentBrand = brand;
+  document.querySelectorAll('.brand-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function initAssessment() {
+  const container = document.getElementById('pillars-container');
+  container.innerHTML = '';
+  PILLARS.forEach((pillar, idx) => {
+    scores[pillar.id] = {};
+    notes[pillar.id] = '';
+    const card = document.createElement('div');
+    card.className = 'pillar-card';
+    card.id = 'pillar-' + pillar.id;
+    let questionsHTML = pillar.questions.map((q, qi) => `
+      <div class="question-row">
+        <div class="question-text">${q}</div>
+        <div class="btn-group">
+          <button class="score-btn yes" onclick="setScore('${pillar.id}',${qi},'yes',this)">YES</button>
+          <button class="score-btn partial" onclick="setScore('${pillar.id}',${qi},'partial',this)">PARTIAL</button>
+          <button class="score-btn no" onclick="setScore('${pillar.id}',${qi},'no',this)">NO</button>
+          <button class="score-btn na" onclick="setScore('${pillar.id}',${qi},'na',this)">N/A</button>
+        </div>
+      </div>
+    `).join('');
+    card.innerHTML = `
+      <div class="pillar-header" onclick="togglePillar('${pillar.id}')">
+        <div class="pillar-number">${idx+1}</div>
+        <div class="pillar-title">${pillar.title}</div>
+        <div class="pillar-score-badge badge-grey" id="badge-${pillar.id}">Not Started</div>
+        <div class="pillar-chevron" id="chevron-${pillar.id}">▼</div>
+      </div>
+      <div class="pillar-body" id="body-${pillar.id}">
+        ${questionsHTML}
+        <div class="notes-section">
+          <label>📝 Assessor Notes — Pillar ${idx+1}: ${pillar.title}</label>
+          <textarea id="notes-${pillar.id}" placeholder="Enter your rough field notes here. Describe what you observed — good or bad. AI will rewrite these into professional report language. Example: 'front camera offline, side entrance no badge reader, parking lot lights out on west side...'" oninput="saveNotes('${pillar.id}')"></textarea>
+          <p class="notes-hint">💡 Tip: Write freely — short phrases, bullet points, whatever is fastest on-site. AI will transform your notes into professional report language during the review step.</p>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+  // Open first pillar
+  document.getElementById('body-' + PILLARS[0].id).classList.add('open');
+  document.getElementById('chevron-' + PILLARS[0].id).textContent = '▲';
+  // Set today's date
+  document.getElementById('fi-date').valueAsDate = new Date();
+}
+
+function togglePillar(id) {
+  const body = document.getElementById('body-' + id);
+  const chevron = document.getElementById('chevron-' + id);
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    chevron.textContent = '▼';
+  } else {
+    body.classList.add('open');
+    chevron.textContent = '▲';
+  }
+}
+
+function setScore(pillarId, qi, value, btn) {
+  if (!scores[pillarId]) scores[pillarId] = {};
+  scores[pillarId][qi] = value;
+  const row = btn.closest('.question-row');
+  row.querySelectorAll('.score-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  updatePillarScore(pillarId);
+  updateOverallScore();
+}
+
+function saveNotes(pillarId) {
+  notes[pillarId] = document.getElementById('notes-' + pillarId).value;
+}
+
+function getPillarScore(pillarId) {
+  const pillar = PILLARS.find(p => p.id === pillarId);
+  const qs = pillar.questions;
+  let total = 0, possible = 0;
+  for (let i = 0; i < qs.length; i++) {
+    const s = scores[pillarId][i];
+    if (s === 'na') continue;
+    possible += 2;
+    if (s === 'yes') total += 2;
+    else if (s === 'partial') total += 1;
+  }
+  if (possible === 0) return null;
+  return Math.round((total / possible) * 100);
+}
+
+function getRiskClass(score) {
+  if (score === null) return 'grey';
+  if (score >= 85) return 'green';
+  if (score >= 70) return 'yellow';
+  if (score >= 50) return 'orange';
+  return 'red';
+}
+
+function getRiskLabel(score) {
+  if (score === null) return 'Not Scored';
+  if (score >= 85) return '🟢 LOW RISK';
+  if (score >= 70) return '🟡 MODERATE RISK';
+  if (score >= 50) return '🟠 HIGH RISK';
+  return '🔴 CRITICAL RISK';
+}
+
+function updatePillarScore(pillarId) {
+  const score = getPillarScore(pillarId);
+  const badge = document.getElementById('badge-' + pillarId);
+  badge.className = 'pillar-score-badge badge-' + getRiskClass(score);
+  badge.textContent = score !== null ? score + '%' : 'Not Started';
+}
+
+function updateOverallScore() {
+  let totalWeighted = 0, totalWeight = 0, answered = 0;
+  PILLARS.forEach(p => {
+    const s = getPillarScore(p.id);
+    if (s !== null) {
+      totalWeighted += s * p.weight;
+      totalWeight += p.weight;
+      answered++;
+    }
+  });
+  const pct = Math.round(answered / PILLARS.length * 100);
+  document.getElementById('completion-pct').textContent = pct + '% Complete';
+  if (totalWeight === 0) return;
+  const overall = Math.round(totalWeighted / totalWeight);
+  const riskClass = getRiskClass(overall);
+  const circle = document.getElementById('score-circle');
+  circle.style.borderColor = riskClass === 'green' ? '#28a745' : riskClass === 'yellow' ? '#ffc107' : riskClass === 'orange' ? '#fd7e14' : '#dc3545';
+  document.getElementById('overall-score').textContent = overall;
+  const badge = document.getElementById('risk-badge');
+  badge.className = 'risk-badge risk-' + riskClass;
+  badge.textContent = getRiskLabel(overall);
+  document.getElementById('score-detail').textContent = answered + ' of ' + PILLARS.length + ' pillars scored. Weighted overall score: ' + overall + '/100.';
+}
+
+function saveProgress() {
+  const data = { scores, notes, facility: getFacilityData(), brand: currentBrand };
+  localStorage.setItem('sag-assessment', JSON.stringify(data));
+  alert('Progress saved! You can reload this page and your data will be restored.');
+}
+
+function getFacilityData() {
+  return {
+    org: document.getElementById('fi-org').value,
+    type: document.getElementById('fi-type').value,
+    address: document.getElementById('fi-address').value,
+    contact: document.getElementById('fi-contact').value,
+    phone: document.getElementById('fi-phone').value,
+    date: document.getElementById('fi-date').value,
+    assessor: document.getElementById('fi-assessor').value,
+    occupants: document.getElementById('fi-occupants').value,
+    sqft: document.getElementById('fi-sqft').value,
+    buildings: document.getElementById('fi-buildings').value,
+    scope: document.getElementById('fi-scope').value
+  };
+}
+
+async function generateAINarrative(pillar, roughNotes, score) {
+  const facility = document.getElementById('fi-org').value || 'the assessed facility';
+  const facilityType = document.getElementById('fi-type').value || 'commercial facility';
+  const riskLevel = score >= 85 ? 'LOW' : score >= 70 ? 'MODERATE' : score >= 50 ? 'HIGH' : 'CRITICAL';
+
+  const yesItems = [], partialItems = [], noItems = [], naItems = [];
+  pillar.questions.forEach((q, i) => {
+    const s = scores[pillar.id][i];
+    if (s === 'yes') yesItems.push(q);
+    else if (s === 'partial') partialItems.push(q);
+    else if (s === 'no') noItems.push(q);
+    else if (s === 'na') naItems.push(q);
+    else noItems.push(q + ' (not answered)');
+  });
+
+  // If no API key, fall back to smart template
+  if (!anthropicApiKey || !anthropicApiKey.startsWith('sk-')) {
+    return generateFallbackNarrative(pillar, roughNotes, score, facility, facilityType, noItems, partialItems);
+  }
+
+  const prompt = `You are a professional security consultant writing a formal security assessment report. Write a professional narrative paragraph (3–5 sentences) for the "${pillar.title}" section of a commercial security assessment report.
+
+FACILITY: ${facility} (${facilityType})
+PILLAR SCORE: ${score}/100 — ${riskLevel} RISK
+PILLAR: ${pillar.title}
+
+ASSESSMENT RESULTS:
+- Items confirmed in place (YES): ${yesItems.length > 0 ? yesItems.join('; ') : 'None'}
+- Items partially in place (PARTIAL): ${partialItems.length > 0 ? partialItems.join('; ') : 'None'}
+- Items missing or failing (NO): ${noItems.length > 0 ? noItems.join('; ') : 'None'}
+- Items not applicable (N/A): ${naItems.length > 0 ? naItems.join('; ') : 'None'}
+${roughNotes && roughNotes.trim() ? '\nASSESSOR FIELD NOTES (incorporate these observations into the narrative):\n' + roughNotes.trim() : ''}
+
+Write a professional, formal 3–5 sentence narrative suitable for a corporate security report. Incorporate any field notes naturally. Reference specific deficiencies and strengths. Match the tone to the risk level — critical/urgent for HIGH/CRITICAL risk, measured/positive for LOW/MODERATE. Do not use bullet points. Write flowing professional prose only.`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': anthropicApiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 512,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      console.error('API error:', err);
+      return generateFallbackNarrative(pillar, roughNotes, score, facility, facilityType, noItems, partialItems);
+    }
+
+    const data = await response.json();
+    return data.content[0].text.trim();
+  } catch(e) {
+    console.error('Fetch error:', e);
+    return generateFallbackNarrative(pillar, roughNotes, score, facility, facilityType, noItems, partialItems);
+  }
+}
+
+function generateFallbackNarrative(pillar, roughNotes, score, facility, facilityType, noItems, partialItems) {
+  let narrative = '';
+  const hasNotes = roughNotes && roughNotes.trim().length > 10;
+
+  if (score >= 85) {
+    narrative = `The ${facilityType}'s ${pillar.title.toLowerCase()} program demonstrates strong implementation and is operating at an effective level. Assessment findings indicate the majority of key controls are in place and functioning as intended.`;
+    if (noItems.length > 0 || partialItems.length > 0) narrative += ` Minor improvement opportunities were identified and should be addressed during routine review cycles.`;
+    narrative += ` Overall, this pillar represents an area of strength within the security program at ${facility}.`;
+  } else if (score >= 70) {
+    narrative = `The ${pillar.title.toLowerCase()} posture at ${facility} is generally adequate but presents several improvement opportunities that should be addressed in the near term.`;
+    if (noItems.length > 0) narrative += ` Deficiencies identified include: ${noItems.slice(0,3).join('; ')}. These gaps should be prioritized within 30–90 days.`;
+    narrative += ` A structured improvement plan for this pillar is recommended.`;
+  } else if (score >= 50) {
+    narrative = `Significant deficiencies were identified within the ${pillar.title.toLowerCase()} pillar at ${facility}, representing an elevated risk level requiring prompt management attention.`;
+    if (noItems.length > 0) narrative += ` Critical gaps include: ${noItems.slice(0,4).join('; ')}. These deficiencies increase facility vulnerability and should be addressed within 30 days.`;
+    narrative += ` Immediate remediation planning is strongly recommended.`;
+  } else {
+    narrative = `The assessment identified critical deficiencies in ${pillar.title.toLowerCase()} at ${facility} that represent an unacceptable level of risk. Immediate corrective action is required.`;
+    if (noItems.length > 0) narrative += ` Critical failures documented: ${noItems.slice(0,5).join('; ')}. These conditions significantly increase the risk of a security incident and expose the organization to substantial liability.`;
+    narrative += ` Executive leadership should be briefed and a remediation plan implemented without delay.`;
+  }
+
+  if (hasNotes) {
+    narrative += `\n\nAssessor field observations: ${roughNotes.trim()}`;
+  }
+
+  return narrative;
+}
+
+async function generateDraft() {
+  const container = document.getElementById('review-container');
+  container.innerHTML = '';
+  approvedNarratives = {};
+
+  // Switch to review screen first and show loading state
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('review-screen').style.display = 'block';
+  window.scrollTo(0, 0);
+
+  container.innerHTML = `<div style="text-align:center;padding:60px 20px;color:#666;">
+    <div style="font-size:40px;margin-bottom:16px;">📋</div>
+    <h3 style="font-size:18px;color:#1a1a2e;margin-bottom:8px;">Preparing your report for review...</h3>
+    <p style="font-size:14px;">Building prompts for all ${PILLARS.length} pillars. One moment.</p>
+  </div>`;
+
+  const pillarCards = [];
+  for (let idx = 0; idx < PILLARS.length; idx++) {
+    const pillar = PILLARS[idx];
+    const score = getPillarScore(pillar.id);
+    const roughNotes = notes[pillar.id] || '';
+    const riskClass = getRiskClass(score);
+
+    const aiText = '';
+
+    pillarCards.push({ pillar, idx, score, roughNotes, riskClass, aiText });
+  }
+
+  // All done — render cards
+  container.innerHTML = '';
+  pillarCards.forEach(({ pillar, idx, score, roughNotes, riskClass, aiText }) => {
+    const facility = document.getElementById('fi-org').value || '[Facility Name]';
+    const scoreDisplay = score !== null ? score + '%' : 'N/A';
+    const grokPrompt = `Rewrite these rough security assessment notes into a professional 3–5 sentence narrative for a formal security report. The section is "${pillar.title}", the score is ${scoreDisplay}, and the facility is ${facility}. Keep it formal, specific, and third-person. Notes: ${roughNotes || '(no notes entered)'}`;
+
+    const div = document.createElement('div');
+    div.className = 'review-pillar';
+    div.id = 'review-pillar-' + pillar.id;
+    div.innerHTML = `
+      <div class="review-pillar-header">
+        <div class="pillar-number">${idx+1}</div>
+        <h3>${pillar.title}</h3>
+        <div class="pillar-score-badge badge-${riskClass}">${scoreDisplay}</div>
+        <div id="approved-${pillar.id}" style="margin-left:12px;"></div>
+      </div>
+      <div class="review-body">
+        <div class="review-col">
+          <h4>📝 Your Field Notes</h4>
+          <div class="rough-notes">${roughNotes || '<em>No notes entered for this pillar.</em>'}</div>
+          <div style="margin-top:14px;background:#fff8e1;border:1px solid #ffc107;border-radius:8px;padding:14px;">
+            <div style="font-size:11px;font-weight:700;color:#856404;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">📋 Grok / ChatGPT Prompt — ready to copy</div>
+            <div id="grok-prompt-${pillar.id}" style="font-size:12px;color:#555;line-height:1.6;word-break:break-word;">${grokPrompt.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+            <button class="btn-sm" id="copy-btn-${pillar.id}" onclick="copyPrompt('${pillar.id}')" style="margin-top:10px;background:#ffc107;color:#333;border:none;cursor:pointer;">📋 Copy Prompt</button>
+          </div>
+        </div>
+        <div class="review-col">
+          <h4>✨ Paste AI Result Here — then Approve</h4>
+          <div class="ai-notes"><textarea id="ai-text-${pillar.id}" rows="8" placeholder="1. Copy the prompt on the left&#10;2. Paste into Grok, ChatGPT, or Claude.ai&#10;3. Copy the result&#10;4. Paste it here&#10;5. Click Approve">${aiText}</textarea></div>
+          <div class="review-actions">
+            <button class="btn-sm btn-approve" onclick="approvePillar('${pillar.id}')">✓ Approve</button>
+            <button class="btn-sm btn-regenerate" onclick="regeneratePillar('${pillar.id}')">↻ Regenerate</button>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+
+  window.scrollTo(0, 0);
+}
+
+function approvePillar(pillarId) {
+  const text = document.getElementById('ai-text-' + pillarId).value;
+  approvedNarratives[pillarId] = text;
+
+  // Green header
+  const header = document.querySelector('#review-pillar-' + pillarId + ' .review-pillar-header');
+  if (header) header.style.background = '#d4edda';
+
+  // Approved badge in header
+  document.getElementById('approved-' + pillarId).innerHTML = '<span class="approved-badge">✓ Approved</span>';
+
+  // Change approve button to confirmed state
+  const approveBtn = document.querySelector('#review-pillar-' + pillarId + ' .btn-approve');
+  if (approveBtn) {
+    approveBtn.textContent = '✓ Approved';
+    approveBtn.style.background = '#155724';
+    approveBtn.disabled = true;
+  }
+
+  // Lock the textarea
+  const textarea = document.getElementById('ai-text-' + pillarId);
+  if (textarea) textarea.style.background = '#f0fff4';
+
+  // Update approved count
+  updateApprovedCount();
+}
+
+function updateApprovedCount() {
+  const count = Object.keys(approvedNarratives).length;
+  const el = document.getElementById('approved-count');
+  if (el) el.textContent = count + ' of ' + PILLARS.length + ' sections approved';
+}
+
+function copyPrompt(pillarId) {
+  const promptEl = document.getElementById('grok-prompt-' + pillarId);
+  const text = promptEl.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copy-btn-' + pillarId);
+    btn.textContent = '✓ Copied!';
+    btn.style.background = '#28a745';
+    btn.style.color = 'white';
+    setTimeout(() => {
+      btn.textContent = '📋 Copy Prompt';
+      btn.style.background = '#ffc107';
+      btn.style.color = '#333';
+    }, 2500);
+  }).catch(() => {
+    // Fallback for browsers that block clipboard
+    const ta = document.createElement('textarea');
+    ta.value = promptEl.innerText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copy-btn-' + pillarId);
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = '📋 Copy Prompt'; }, 2500);
+  });
+}
+
+async function regeneratePillar(pillarId) {
+  const pillar = PILLARS.find(p => p.id === pillarId);
+  const score = getPillarScore(pillarId) || 50;
+  const roughNotes = notes[pillarId] || '';
+  const textarea = document.getElementById('ai-text-' + pillarId);
+  const regenBtn = textarea.closest('.review-col').querySelector('.btn-regenerate');
+
+  textarea.value = '⏳ Regenerating — please wait...';
+  textarea.disabled = true;
+  regenBtn.disabled = true;
+  document.getElementById('approved-' + pillarId).innerHTML = '';
+  delete approvedNarratives[pillarId];
+
+  const newText = await generateAINarrative(pillar, roughNotes, score);
+  textarea.value = newText;
+  textarea.disabled = false;
+  regenBtn.disabled = false;
+}
+
+function backToAssessment() {
+  document.getElementById('review-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function backToReview() {
+  document.getElementById('report-screen').style.display = 'none';
+  document.getElementById('review-screen').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function finalizeReport() {
+  // Auto-approve any unapproved
+  PILLARS.forEach(p => {
+    if (!approvedNarratives[p.id]) {
+      approvedNarratives[p.id] = document.getElementById('ai-text-' + p.id)?.value || '';
+    }
+  });
+  buildReport();
+  document.getElementById('review-screen').style.display = 'none';
+  document.getElementById('report-screen').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function getActionItems() {
+  const items = [];
+  PILLARS.forEach(pillar => {
+    const score = getPillarScore(pillar.id);
+    if (score === null) return;
+    if (score < 50) {
+      items.push({ pillar: pillar.title, priority: 'IMMEDIATE', timeframe: '0–30 Days', action: 'Critical deficiencies identified — immediate remediation required', score });
+    } else if (score < 70) {
+      items.push({ pillar: pillar.title, priority: 'SHORT-TERM', timeframe: '31–90 Days', action: 'Significant gaps identified — develop and implement remediation plan', score });
+    } else if (score < 85) {
+      items.push({ pillar: pillar.title, priority: 'LONG-TERM', timeframe: '91–365 Days', action: 'Minor improvements identified — address during routine security reviews', score });
+    }
+  });
+  return items.sort((a,b) => a.score - b.score);
+}
+
+function buildReport() {
+  const f = getFacilityData();
+  const brandName = currentBrand === 'bluestar' ? 'Blue Star Security & Training' : 'Global Security Solutions';
+  const brandTagline = currentBrand === 'bluestar' ? 'Jacksonville, Florida' : 'Oakbrook Terrace, Illinois';
+
+  let totalWeighted = 0, totalWeight = 0;
+  PILLARS.forEach(p => {
+    const s = getPillarScore(p.id);
+    if (s !== null) { totalWeighted += s * p.weight; totalWeight += p.weight; }
+  });
+  const overall = totalWeight > 0 ? Math.round(totalWeighted / totalWeight) : 0;
+  const riskLabel = overall >= 85 ? 'LOW RISK' : overall >= 70 ? 'MODERATE RISK' : overall >= 50 ? 'HIGH RISK' : 'CRITICAL RISK';
+  const riskColor = overall >= 85 ? '#28a745' : overall >= 70 ? '#ffc107' : overall >= 50 ? '#fd7e14' : '#dc3545';
+  const actionItems = getActionItems();
+  const immediate = actionItems.filter(a => a.priority === 'IMMEDIATE');
+  const shortTerm = actionItems.filter(a => a.priority === 'SHORT-TERM');
+  const longTerm = actionItems.filter(a => a.priority === 'LONG-TERM');
+
+  let pillarSummaryHTML = PILLARS.map(p => {
+    const s = getPillarScore(p.id);
+    const rc = getRiskClass(s);
+    return `<div class="pillar-summary-item ${rc}">
+      <h4>${p.title}</h4>
+      <div class="score" style="color:${s>=85?'#28a745':s>=70?'#856404':s>=50?'#7c4a00':'#721c24'}">${s !== null ? s+'%' : 'N/A'}</div>
+      <div style="font-size:12px;color:#666;margin-top:2px;">${getRiskLabel(s).replace(/🟢|🟡|🟠|🔴/g,'').trim()}</div>
+    </div>`;
+  }).join('');
+
+  let findingsHTML = PILLARS.map(p => {
+    const s = getPillarScore(p.id);
+    const rc = getRiskClass(s);
+    const borderColor = s>=85?'#28a745':s>=70?'#ffc107':s>=50?'#fd7e14':'#dc3545';
+    return `<div class="finding-block">
+      <h3 style="color:#1a1a2e;">
+        <span style="background:${borderColor};color:white;padding:3px 10px;border-radius:4px;font-size:12px;">${s !== null ? s+'%' : 'N/A'}</span>
+        ${p.title}
+      </h3>
+      <p>${approvedNarratives[p.id] || 'No narrative available.'}</p>
+    </div>`;
+  }).join('');
+
+  let actionTableHTML = `
+    <table class="action-table">
+      <thead><tr><th>Priority</th><th>Timeframe</th><th>Security Pillar</th><th>Score</th><th>Recommended Action</th></tr></thead>
+      <tbody>
+        ${immediate.map(a=>`<tr><td class="priority-immediate">● IMMEDIATE</td><td>${a.timeframe}</td><td>${a.pillar}</td><td>${a.score}%</td><td>${a.action}</td></tr>`).join('')}
+        ${shortTerm.map(a=>`<tr><td class="priority-short">● SHORT-TERM</td><td>${a.timeframe}</td><td>${a.pillar}</td><td>${a.score}%</td><td>${a.action}</td></tr>`).join('')}
+        ${longTerm.map(a=>`<tr><td class="priority-long">● LONG-TERM</td><td>${a.timeframe}</td><td>${a.pillar}</td><td>${a.score}%</td><td>${a.action}</td></tr>`).join('')}
+        ${actionItems.length === 0 ? '<tr><td colspan="5" style="text-align:center;color:#28a745;font-weight:600;">✓ No critical action items identified. Maintain current security posture.</td></tr>' : ''}
+      </tbody>
+    </table>`;
+
+  const execSummary = `This security assessment was conducted at ${f.org || 'the assessed facility'} (${f.type || 'commercial facility'}) located at ${f.address || '[address]'} on ${f.date || '[date]'} by ${f.assessor || 'Lead Assessor'} on behalf of ${brandName}.
+
+The assessment evaluated ${PILLARS.length} security pillars using the Tier One Risk Assessment methodology. Each pillar was scored on a 0–100 scale based on observed conditions, documentation review, and policy verification.
+
+The facility received an overall weighted security score of ${overall}/100, representing a ${riskLabel} designation. ${overall >= 85 ? 'The security program demonstrates strong implementation across most assessed areas.' : overall >= 70 ? 'The security program demonstrates adequate baseline controls with several areas requiring improvement.' : overall >= 50 ? 'The assessment identified significant security gaps that require prompt management attention and structured remediation.' : 'Critical security deficiencies were identified that require immediate corrective action and executive leadership engagement.'}
+
+${immediate.length > 0 ? `${immediate.length} pillar(s) were rated Critical Risk and require immediate remediation within 0–30 days.` : ''} ${shortTerm.length > 0 ? `${shortTerm.length} pillar(s) require short-term improvement within 31–90 days.` : ''} ${longTerm.length > 0 ? `${longTerm.length} pillar(s) have long-term improvement opportunities to be addressed within 365 days.` : ''}
+
+This report is confidential and intended solely for use by ${f.org || 'the assessed organization'} and ${brandName}. Findings and recommendations are based on conditions observed on the date of assessment.`;
+
+  const reportHTML = `
+    <div class="report-cover">
+      <div style="font-size:48px;margin-bottom:16px;">🛡️</div>
+      <div style="font-size:14px;letter-spacing:2px;text-transform:uppercase;color:#aac4e0;margin-bottom:12px;">Tier One Risk Assessment</div>
+      <h1>Commercial Security Assessment Report</h1>
+      <h2>${f.org || 'Facility Name'}</h2>
+      <div style="margin-top:8px;font-size:14px;color:#aac4e0;">${f.type || ''} • ${f.address || ''}</div>
+      <div style="margin-top:24px;display:inline-block;background:${riskColor};color:white;padding:10px 32px;border-radius:8px;font-size:20px;font-weight:700;letter-spacing:2px;">${riskLabel} — ${overall}/100</div>
+      <div class="report-meta">
+        <div class="report-meta-item"><label>Assessment Date</label><p>${f.date || '—'}</p></div>
+        <div class="report-meta-item"><label>Lead Assessor</label><p>${f.assessor || '—'}</p></div>
+        <div class="report-meta-item"><label>Conducted By</label><p>${brandName}</p></div>
+        <div class="report-meta-item"><label>Location</label><p>${brandTagline}</p></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h2>Executive Summary</h2>
+      <div class="exec-summary">${execSummary.split('\n\n').map(p=>`<p style="margin-bottom:14px;">${p}</p>`).join('')}</div>
+    </div>
+
+    <div class="report-section">
+      <h2>Security Scorecard — All Pillars</h2>
+      <div class="pillar-summary-grid">${pillarSummaryHTML}</div>
+    </div>
+
+    <div class="report-section">
+      <h2>Detailed Findings by Pillar</h2>
+      ${findingsHTML}
+    </div>
+
+    <div class="report-section">
+      <h2>Priority Action Plan</h2>
+      ${actionTableHTML}
+    </div>
+
+    <div class="report-section">
+      <h2>Recommended Services</h2>
+      <table class="action-table">
+        <thead><tr><th>Service</th><th>Description</th><th>Recommended</th></tr></thead>
+        <tbody>
+          <tr><td>Security Team Training</td><td>Armed/unarmed training, de-escalation, active threat response, role-specific protocols</td><td>☐</td></tr>
+          <tr><td>Force-on-Force Scenario Training</td><td>Simunition-based scenarios tailored to facility environment. Builds decision-making under stress.</td><td>☐</td></tr>
+          <tr><td>Emergency Action Plan Development</td><td>Custom written plans (active threat, shelter-in-place, fire) specific to facility layout</td><td>☐</td></tr>
+          <tr><td>Workplace Violence Prevention Training</td><td>Behavioral warning signs, threat assessment, de-escalation for managers and staff</td><td>☐</td></tr>
+          <tr><td>Active Threat / Run-Hide-Fight Training</td><td>Staff training on response protocols, lockdown procedures, and law enforcement coordination</td><td>☐</td></tr>
+          <tr><td>Security Technology Assessment</td><td>Camera placement, access control design, sensor systems, and vendor vetting</td><td>☐</td></tr>
+          <tr><td>Annual Re-Assessment</td><td>Follow-up assessment to measure score improvement and identify new or evolving risks</td><td>☐</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="report-section" style="border-left:4px solid #dc3545;">
+      <h2 style="color:#dc3545;">Legal Disclaimer</h2>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>1. Scope Limitation.</strong> This Tier One Risk Assessment report reflects conditions observed solely on the date of the on-site assessment. Security conditions, personnel, equipment, policies, and physical environments may change after the assessment date. ${brandName} assumes no responsibility for conditions that arise or change following the date of this assessment.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>2. No Guarantee of Security.</strong> This report does not guarantee that the assessed facility is secure, free from risk, or that a security incident, loss, injury, or criminal act will not occur. Findings and recommendations identify observed deficiencies and improvement opportunities only and do not constitute a warranty of any kind.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>3. Professional Opinion Only.</strong> All findings, scores, and recommendations contained in this report represent the professional opinion of the lead assessor based on visual observation, interviews, and information provided by the client at the time of assessment. This report does not constitute a legal, engineering, architectural, or insurance opinion.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>4. Client Responsibility.</strong> The implementation of any recommendations contained in this report is solely the responsibility of the client. ${brandName} shall not be held liable for any loss, damage, injury, claim, or expense arising from the client's failure to act upon, or partial implementation of, the recommendations set forth herein.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>5. Limitation of Liability.</strong> In no event shall ${brandName}, its officers, employees, or agents be liable for any indirect, incidental, consequential, special, or punitive damages of any kind. ${brandName}'s total liability arising out of or related to this assessment shall not exceed the fees paid by the client for this assessment.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;margin-bottom:12px;"><strong>6. Confidentiality.</strong> This report is confidential and intended solely for the use of the named client organization. This report may not be shared, reproduced, published, or distributed to any third party without the express written consent of ${brandName}. Unauthorized disclosure may expose the client to increased security risk and potential liability.</p>
+      <p style="font-size:13px;line-height:1.8;color:#444;"><strong>7. Governing Agreement.</strong> This assessment and report are governed by the terms of the professional services agreement between the client and ${brandName}. In the absence of a signed agreement, this disclaimer constitutes the entire understanding between the parties regarding liability and obligations related to this assessment.</p>
+    </div>
+
+    <div class="report-section">
+      <h2>Certification & Sign-Off</h2>
+      <p style="font-size:13px;color:#555;margin-bottom:24px;">The assessor certifies this report was completed in good faith using the Tier One Risk Assessment methodology, based on conditions observed on the assessment date. This report is <strong>SENSITIVE</strong> and intended solely for the use of the assessed facility and ${brandName}. Store securely. Do not distribute without authorization.</p>
+      <div class="sign-grid">
+        <div class="sign-block">
+          <p><strong>Lead Assessor</strong></p>
+          <p style="margin-top:32px;">Name: ___________________________</p>
+          <p>Date: ____________________________</p>
+        </div>
+        <div class="sign-block">
+          <p><strong>Facility Representative</strong></p>
+          <p style="margin-top:32px;">Name: ___________________________</p>
+          <p>Title: ____________________________ &nbsp; Date: ____________</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="confidential-footer">
+      Tier One Risk Assessment | Conducted by ${brandName} | ${brandTagline}<br>
+      Assessment Report v1.0 | ${f.org || '[Facility]'} | ${f.date || '[Date]'} | <strong>SENSITIVE — FOR OFFICIAL USE ONLY</strong>
+    </div>
+  `;
+
+  document.getElementById('report-output').innerHTML = reportHTML;
+}
+
+// Restore saved progress
+window.onload = function() {
+  const saved = localStorage.getItem('sag-assessment');
+  if (saved) {
+    try {
+      const data = JSON.parse(saved);
+      if (data.scores) scores = data.scores;
+      if (data.notes) notes = data.notes;
+    } catch(e) {}
+  }
+}
+</script>
+</body>
+</html>
